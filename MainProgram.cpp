@@ -1,206 +1,283 @@
 /************************************************************
-CMP2003 – Lab: Sorting (Student Skeleton)
- 
-Implement the TODO parts only.
-Do NOT change function signatures.
- 
-Tasks:
-1) SinglyLinkedList::selectionSort()
-2) insertionSort(int arr[], int n)
-3) partition(vector<int>&, int, int)  + kThSmallestItem(vector<int>, int)
-4) heapify(int arr[], int n, int i) + heapSort(int arr[], int n)
- 
-Notes:
-- main() is for manual testing only.
-- Autograding will compile with -DCATCH_TESTING so main() will be disabled.
+CMP2003 – Data Structures
+Lab: Binary Search Tree (BST) – Traversals & Basic Stats
+Student Skeleton (fill the TODOs)
+Time: ~50 minutes
+ 
+GOAL
+  - Implement a Binary Search Tree that supports:
+      1) insert(x)
+      2) inorderTraversal()
+      3) preorderTraversal()
+      4) postorderTraversal()
+      5) treeHeight()
+      6) treeNodeCount()
+      7) treeLeavesCount()
+ 
+INPUT
+  - User enters integers ending with -999 sentinel.
+ 
+RULES / NOTES
+  - Duplicates: insert them into the RIGHT subtree.
+  - Height definition for this lab:
+      * empty tree => height = 0
+      * single node => height = 1
+  - Traversal format: print values separated by a single space.
+ 
 ************************************************************/
- 
+ 
 #include <iostream>
-#include <vector>
-#include <stdexcept>
-#include <utility>
- 
 using namespace std;
- 
-// ============================================================
-// SINGLY LINKED LIST
-// ============================================================
- 
-class SinglyLinkedList {
-private:
-    struct Node {
-        int data;
-        Node* next;
-    };
- 
-    Node* head;
- 
-public:
-    SinglyLinkedList() : head(nullptr) {}
- 
-    void insertEnd(int value) {
-        Node* newNode = new Node{value, nullptr};
- 
-        if (head == nullptr) {
-            head = newNode;
-            return;
-        }
- 
-        Node* temp = head;
-        while (temp->next != nullptr)
-            temp = temp->next;
- 
-        temp->next = newNode;
-    }
- 
-    // Helper for grading (do not modify)
-    std::vector<int> toVector() const {
-        std::vector<int> out;
-        Node* temp = head;
-        while (temp != nullptr) {
-            out.push_back(temp->data);
-            temp = temp->next;
-        }
-        return out;
-    }
- 
-    // Print list (manual check)
-    void print() const {
-        Node* temp = head;
-        while (temp != nullptr) {
-            std::cout << temp->data;
-            if (temp->next) std::cout << " -> ";
-            temp = temp->next;
-        }
-        std::cout << "\n";
-    }
- 
-    // ========================================================
-    // TASK 1: Selection Sort (Linked List)
-    // ========================================================
-    void selectionSort() {
-        // TODO:
-        // Use selection sort by swapping node->data values
-       for(Node* i = head; i != nullptr; i = i->next){
-           Node* minNode = i;
-           for(Node* j = i->next; j != nullptr; j = j->next){
-               if(j->data < minNode->data) minNode = j;
-           }
-           swap(i->data,minNode->data);
-       }
-    }
+ 
+/************************************************************
+  BST NODE (template)
+************************************************************/
+template <class T>
+struct nodeType {
+    T info;
+    nodeType<T>* llink;
+    nodeType<T>* rlink;
+ 
+    nodeType(const T& val)
+        : info(val), llink(nullptr), rlink(nullptr) {}
 };
- 
-// ============================================================
-// TASK 2: INSERTION SORT (ARRAY)
-// ============================================================
- 
-void insertionSort(int arr[], int n) {
-    // TODO:
-    // Standard insertion sort
-    for(int i = 1; i< n; i++){
-        int key = arr[i];
-        int j = i - 1;
-        
-        while(j >= 0 && arr[j] > key){
-            arr[j + 1] = arr[j];
-            j--;
-        }
-        arr[j + 1] = key;
-    }
-    
+ 
+/************************************************************
+  BST CLASS
+************************************************************/
+template <class T>
+class bSearchTreeType {
+public:
+    bSearchTreeType() : root(nullptr) {}
+    ~bSearchTreeType() { destroy(root); }
+ 
+    // ======= STUDENT TASKS =======
+    void insert(const T& item);         // Task 1
+    void inorderTraversal() const;      // Task 2
+    void preorderTraversal() const;     // Task 2
+    void postorderTraversal() const;    // Task 2
+ 
+    int treeHeight() const;             // Task 3
+    int treeNodeCount() const;          // Task 4
+    int treeLeavesCount() const;        // Task 5
+ 
+private:
+    nodeType<T>* root;
+ 
+    // recursive helpers
+    void insert(nodeType<T>*& p, const T& item);
+ 
+    void inorder(nodeType<T>* p) const;
+    void preorder(nodeType<T>* p) const;
+    void postorder(nodeType<T>* p) const;
+ 
+    int height(nodeType<T>* p) const;
+    int nodeCount(nodeType<T>* p) const;
+    int leavesCount(nodeType<T>* p) const;
+ 
+    // given helper
+    void destroy(nodeType<T>*& p);
+};
+ 
+/************************************************************
+  Helper: destroy tree (given)
+************************************************************/
+template <class T>
+void bSearchTreeType<T>::destroy(nodeType<T>*& p) {
+    if (p != nullptr) {
+        destroy(p->llink);
+        destroy(p->rlink);
+        delete p;
+        p = nullptr;
+    }
 }
- 
-// ============================================================
-// TASK 3: QUICKSELECT (k-th smallest)
-// ============================================================
- 
-int partition(vector<int>& v, int low, int high) {
-    // TODO:
-    int pivot = v[high];
-    int i = low;
-    for (int j = low ; j < high ; j++){
-        if(v[j] <= pivot){
-            swap(v[i] , v[j]);
-            i++;
-        }
-    }
-    swap(v[i] , v[high]);
-    return i; 
+ 
+/************************************************************
+  Task 1: insert (public wrapper)
+************************************************************/
+template <class T>
+void bSearchTreeType<T>::insert(const T& item) {
+    // TODO:
+    // Call the recursive insert helper starting from root.
+    // Example: insert(root, item);
+    insert(root, item);
 }
- 
-int kThSmallestItem(vector<int> v, int k) {
-    // TODO:
-    // MUST throw on invalid k:
-     if (k < 0 || k >= (int)v.size()){ throw out_of_range("k out of range");}
- 
-    // Then do quickselect loop:
-    int low = 0, high = (int)v.size()-1;
-    while (low <= high){
-      int p = partition(v, low, high);
-      if (p == k) return v[p];
-      else if (k < p) high = p - 1;
-      else low = p + 1;
+ 
+/************************************************************
+  Task 1: insert (recursive)
+  Policy:
+   - if item < p->info  => go left
+   - else               => go right (also handles duplicates)
+************************************************************/
+template <class T>
+void bSearchTreeType<T>::insert(nodeType<T>*& p, const T& item) {
+    // TODO:
+    // If p is null, create a new node.
+    // Otherwise, recurse left or right based on BST rules.
+    if(p == nullptr){
+        p = new nodeType<T>(item);
+        return;
+    }if(item < p->info){
+        insert(p -> llink,item);
+    }else{
+        insert(p -> rlink,item);
+    }
 }
-    return -1; // placeholder
+ 
+/************************************************************
+  Task 2: Traversals (public wrappers)
+************************************************************/
+template <class T>
+void bSearchTreeType<T>::inorderTraversal() const {
+    inorder(root);
 }
- 
-// ============================================================
-// TASK 4: HEAP SORT
-// ============================================================
- 
-void heapify(int arr[], int n, int i) {
-    // TODO:
-    int largest = i;
-    int left = 2*i + 1;
-    int right = 2*i + 2;
-     if (left < n && arr[left] > arr[largest] ) largest = left;
-     if (right < n && arr[right] > arr[largest])  largest = right;
-     if (largest != i){
-        std::swap(arr[i], arr[largest]);
-        heapify(arr, n, largest);
-    }
+ 
+template <class T>
+void bSearchTreeType<T>::preorderTraversal() const {
+    preorder(root);
 }
-
-void heapSort(int arr[], int n) {
-    // TODO:
-    // Build max heap:
-     for (int i = n/2 - 1; i >= 0; i--) {
-         heapify(arr, n, i);
-     }
-    // Extract max:
-    for (int i = n-1; i > 0; i--) {
-        swap(arr[0], arr[i]);
-        heapify(arr, i, 0);
-     }
+ 
+template <class T>
+void bSearchTreeType<T>::postorderTraversal() const {
+    postorder(root);
 }
- 
-// ============================================================
-// MAIN (manual testing only)
-// ============================================================
-#ifndef CATCH_TESTING
+ 
+/************************************************************
+  Task 2: Traversals (recursive)
+  inorder:   Left, Root, Right
+  preorder:  Root, Left, Right
+  postorder: Left, Right, Root
+************************************************************/
+template <class T>
+void bSearchTreeType<T>::inorder(nodeType<T>* p) const {
+    // TODO:
+    // If p is null return
+    if(p == nullptr) return;
+    // Visit left, print root, visit right
+    inorder(p->llink);
+    cout << p->info << " ";
+    inorder(p->rlink);
+}
+ 
+template <class T>
+void bSearchTreeType<T>::preorder(nodeType<T>* p) const {
+    // TODO:
+    // If p is null return
+    if(p == nullptr) return;
+    // Print root, visit left, visit right
+    cout << p->info << " ";
+    preorder(p->llink);
+    preorder(p->rlink);
+}
+ 
+template <class T>
+void bSearchTreeType<T>::postorder(nodeType<T>* p) const {
+    // TODO:
+    // If p is null return
+    if(p == nullptr) return;
+    // Visit left, visit right, print root
+    postorder(p->llink);
+    postorder(p->rlink);
+    cout << p->info << " ";
+}
+ 
+/************************************************************
+  Task 3: treeHeight
+  Height rules:
+   - empty tree => 0
+   - single node => 1
+************************************************************/
+template <class T>
+int bSearchTreeType<T>::treeHeight() const {
+    // TODO: return height(root)
+    return height(root);
+}
+ 
+template <class T>
+int bSearchTreeType<T>::height(nodeType<T>* p) const {
+    // TODO:
+    // If p is null => 0
+    if(p == nullptr) return 0;
+    int hl = height(p->llink);
+    int hr = height(p->rlink);
+    return 1 + (hl > hr ? hl : hr);
+}
+ 
+/************************************************************
+  Task 4: treeNodeCount
+************************************************************/
+template <class T>
+int bSearchTreeType<T>::treeNodeCount() const {
+    // TODO: return nodeCount(root)
+    return nodeCount(root);
+}
+ 
+template <class T>
+int bSearchTreeType<T>::nodeCount(nodeType<T>* p) const {
+    // TODO:
+    // If p is null => 0
+    if(p == nullptr) return 0;
+    // else => 1 + nodeCount(left) + nodeCount(right)
+    return 1 + nodeCount(p->llink) + nodeCount(p->rlink);
+}
+ 
+/************************************************************
+  Task 5: treeLeavesCount
+  Leaf = node with no children
+************************************************************/
+template <class T>
+int bSearchTreeType<T>::treeLeavesCount() const {
+    // TODO: return leavesCount(root)
+    return leavesCount(root);
+}
+ 
+template <class T>
+int bSearchTreeType<T>::leavesCount(nodeType<T>* p) const {
+    // TODO:
+    // If p is null => 0
+    if(p == nullptr) return 0;
+    // If p is leaf => 1
+    if(p->llink == nullptr && p->rlink == nullptr) return 1;
+    // else => leavesCount(left) + leavesCount(right)
+    return leavesCount(p->llink) + leavesCount(p->rlink);
+    return 0;
+}
+ 
+/************************************************************
+  MAIN (same behavior as your snippet)
+************************************************************/
+// Data example:
+// 68 43 10 56 77 82 61 82 33 56 72 66 99 88 12 6 7 21 -999
+ 
 int main() {
-    SinglyLinkedList list;
-    int listVals[] = {5, 2, 9, 1, 3};
-    for (int x : listVals) list.insertEnd(x);
- 
-    list.print();
-    list.selectionSort();
-    list.print();
- 
-    int arr[] = {8, 4, 7, 2, 9};
-    insertionSort(arr, 5);
-    for (int i = 0; i < 5; i++) std::cout << arr[i] << " ";
-    std::cout << "\n";
- 
-    vector<int> v = {10, 4, 6, 2, 8, 1};
-    std::cout << kThSmallestItem(v, 3) << "\n";
- 
-    int h[] = {12, 3, 17, 8, 34, 25, 1};
-    heapSort(h, 7);
-    for (int i = 0; i < 7; i++) std::cout << h[i] << " ";
-    std::cout << "\n";
- 
-    return 0;
+    bSearchTreeType<int> treeRoot;
+ 
+    int num;
+    cout << "Enter numbers ending with -999" << endl;
+    cin >> num;
+ 
+    while (num != -999) {
+        treeRoot.insert(num);
+        cin >> num;
+    }
+ 
+    cout << endl << "Tree nodes in inorder: ";
+    treeRoot.inorderTraversal();
+ 
+    cout << endl << "Tree nodes in preorder: ";
+    treeRoot.preorderTraversal();
+ 
+    cout << endl << "Tree nodes in postorder: ";
+    treeRoot.postorderTraversal();
+    cout << endl;
+ 
+    cout << "Tree Height: " << treeRoot.treeHeight() << endl;
+    cout << "Number of Nodes: " << treeRoot.treeNodeCount() << endl;
+    cout << "Number or Leaves: " << treeRoot.treeLeavesCount() << endl;
+    cout << endl;
+ 
+    return 0;
 }
-#endif
+ 
+ 
+ 
